@@ -159,13 +159,6 @@ flowchart LR
 # LLM-backed orchestrator (optional)
 # =========================
 def call_orchestrator_api(meta: dict) -> dict:
-    """
-    Plug your provider here. You can:
-    - call your own backend
-    - call OpenAI/Anthropic directly
-    The function must return the same dict shape as demo_simulation().
-    """
-    # Example: call a custom endpoint you host (recommended for events)
     endpoint = os.getenv("ORCHESTRATOR_ENDPOINT", "").strip()
     api_key = os.getenv("ORCHESTRATOR_API_KEY", "").strip()
 
@@ -173,11 +166,13 @@ def call_orchestrator_api(meta: dict) -> dict:
         raise RuntimeError("Missing ORCHESTRATOR_ENDPOINT env var.")
 
     headers = {"Content-Type": "application/json"}
+
     if api_key:
-    headers["X-Orch-Secret"] = api_key
+        headers["X-Orch-Secret"] = api_key
 
     payload = {"meta": meta}
-    r = requests.post(endpoint, headers=headers, data=json.dumps(payload), timeout=25)
+
+    r = requests.post(endpoint, headers=headers, json=payload, timeout=30)
     r.raise_for_status()
     return r.json()
 
