@@ -174,7 +174,7 @@ def call_orchestrator_api(meta: dict) -> dict:
 
     headers = {"Content-Type": "application/json"}
     if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
+    headers["X-Orch-Secret"] = api_key
 
     payload = {"meta": meta}
     r = requests.post(endpoint, headers=headers, data=json.dumps(payload), timeout=25)
