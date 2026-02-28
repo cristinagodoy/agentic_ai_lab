@@ -158,6 +158,20 @@ flowchart LR
 # =========================
 # LLM-backed orchestrator (optional)
 # =========================
+def warm_up_orchestrator():
+    endpoint = os.getenv("ORCHESTRATOR_ENDPOINT", "").strip()
+    if not endpoint:
+        return
+
+    # endpoint termina em /orchestrate → trocar por /health
+    health_url = endpoint.replace("/orchestrate", "/health")
+
+    try:
+        requests.get(health_url, timeout=15)
+    except Exception:
+        # se falhar, a gente ignora; é só para "acordar"
+        pass
+
 def call_orchestrator_api(meta: dict) -> dict:
     endpoint = os.getenv("ORCHESTRATOR_ENDPOINT", "").strip()
     api_key = os.getenv("ORCHESTRATOR_API_KEY", "").strip()
@@ -172,7 +186,7 @@ def call_orchestrator_api(meta: dict) -> dict:
 
     payload = {"meta": meta}
 
-    r = requests.post(endpoint, headers=headers, json=payload, timeout=30)
+    r = requests.post(endpoint, headers=headers, json=payload, timeout=90)
     r.raise_for_status()
     return r.json()
 
