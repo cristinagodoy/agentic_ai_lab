@@ -138,7 +138,7 @@ flowchart LR
 """
 
     for i, al in enumerate(alerts[:4], start=1):
-        mermaid += f'\n  X{i}{{ALERT: {al["message"]}}} -.-> D'
+        mermaid += f'\n  X{i}{{ALERT {i}}} -.-> D'
 
     return {
         "meta": meta,
@@ -196,8 +196,14 @@ with st.sidebar:
 
     st.divider()
     mode = st.radio("Mode", ["Demo (offline)", "API (orchestrator endpoint)"], index=0)
-    run = st.button("Run Simulation", type="primary")
+    stage_mode = st.toggle("Stage mode (clean screen)", value=True)
 
+    st.subheader("Stage buttons")
+    round1 = st.button("Run Round 1 (No incident)", type="primary")
+    round2 = st.button("Run Round 2 (Incident)", type="primary")
+    run_custom = st.button("Run Custom")
+
+# Default meta from UI
 meta = {
     "policy_objective": policy_objective,
     "risk_appetite": risk_appetite,
@@ -205,7 +211,24 @@ meta = {
     "event": event
 }
 
-if run:
+# Stage presets
+if round1:
+    meta = {
+        "policy_objective": "speed",
+        "risk_appetite": "medium",
+        "interoperability_level": "high",
+        "event": "none"
+    }
+
+if round2:
+    meta = {
+        "policy_objective": "speed",
+        "risk_appetite": "medium",
+        "interoperability_level": "high",
+        "event": "subprocessor_and_anomalous_access"
+    }
+
+if round1 or round2 or run_custom:
     try:
         if mode == "Demo (offline)":
             result = demo_simulation(meta)
@@ -214,7 +237,6 @@ if run:
 
         st.success("Simulation complete.")
 
-        # --- Top: Takeaway + Standards needed
         colA, colB = st.columns([2, 1])
         with colA:
             st.subheader("Takeaway")
@@ -227,7 +249,6 @@ if run:
 
         st.divider()
 
-        # --- Ledger table
         st.subheader("Decision Ledger (chain outputs)")
         agents = result.get("agents", [])
         df = pd.DataFrame([{
@@ -245,9 +266,8 @@ if run:
 
         st.divider()
 
-        # --- Alerts
         st.subheader("Alerts (what breaks and why)")
-        alerts = result.get("alerts", [])
+        alerts = result.get("alerts", [])[:3]  # palco: só os 3 mais importantes
         if not alerts:
             st.info("No alerts triggered.")
         else:
@@ -264,7 +284,6 @@ if run:
 
         st.divider()
 
-        # --- Mermaid graph
         st.subheader("Chain Visualization (Mermaid)")
         mermaid_code = result.get("mermaid", "")
         if mermaid_code:
@@ -272,12 +291,14 @@ if run:
         else:
             st.info("No Mermaid diagram provided.")
 
-        # --- Raw JSON (debug)
-        with st.expander("Raw JSON (for debugging / export)"):
+        if not stage_mode:
+          with st.expander("Raw JSON (for debugging / export)"):
             st.json(result)
+
+        st.info("Stage question: Who is the accountable human role here — and what exact decision do they own?")
 
     except Exception as e:
         st.error(f"Failed to run simulation: {e}")
         st.stop()
 else:
-    st.info("Set inputs on the left and click **Run Simulation**.")
+    st.info("Set inputs on the left and click **Run Round 1**, **Run Round 2**, or **Run Custom**.")
