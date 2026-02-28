@@ -247,6 +247,7 @@ if round1 or round2 or run_custom:
         if mode == "Demo (offline)":
             result = demo_simulation(meta)
         else:
+            warm_up_orchestrator()
             result = call_orchestrator_api(meta)
 
         st.success("Simulation complete.")
