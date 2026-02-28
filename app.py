@@ -264,9 +264,10 @@ if round1 or round2 or run_custom:
 
         st.divider()
 
-        st.subheader("Decision Ledger (chain outputs)")
-        agents = result.get("agents", [])
-        df = pd.DataFrame([{
+        if not stage_mode:
+            st.subheader("Decision Ledger (chain outputs)")
+            agents = result.get("agents", [])
+            df = pd.DataFrame([{
             "Agent": a.get("name"),
             "Goal": a.get("goal"),
             "Decision": a.get("decision"),
