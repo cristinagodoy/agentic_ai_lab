@@ -278,7 +278,11 @@ if round1 or round2 or run_custom:
             "Escalation rule": a.get("escalation_rule"),
             "Open risks": "; ".join(a.get("open_risks", []))
         } for a in agents])
-        st.dataframe(df, use_container_width=True, hide_index=True)
+       
+
+        if not stage_mode:
+            st.subheader("Decision Ledger (chain outputs)")
+            st.dataframe(df, use_container_width=True, hide_index=True)
 
         st.divider()
 
