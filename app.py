@@ -218,6 +218,7 @@ with st.sidebar:
     run_custom = st.button("Run Custom")
 
 # Default meta from UI
+# Default meta from UI (Custom)
 meta = {
     "policy_objective": policy_objective,
     "risk_appetite": risk_appetite,
@@ -225,7 +226,7 @@ meta = {
     "event": event
 }
 
-# Stage presets
+# Stage presets (mutually exclusive)
 if round1:
     meta = {
         "policy_objective": "speed",
@@ -233,17 +234,19 @@ if round1:
         "interoperability_level": "high",
         "event": "none"
     }
-
-if round2:
+elif round2:
     meta = {
         "policy_objective": "speed",
         "risk_appetite": "medium",
         "interoperability_level": "high",
         "event": "subprocessor_and_anomalous_access"
     }
+# elif run_custom:  # opcional: não precisa, porque o meta default já é o custom
+#     pass
 
 if round1 or round2 or run_custom:
     try:
+        st.caption(f"Running with meta = {meta}")
         if mode == "Demo (offline)":
             result = demo_simulation(meta)
         else:
