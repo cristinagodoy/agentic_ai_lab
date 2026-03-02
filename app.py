@@ -245,28 +245,26 @@ elif round2:
 #     pass
 
 if round1 or round2 or run_custom:
+    # mostra o meta que você acha que está mandando
+    st.caption(f"Running with meta = {meta}")
+
+    # --- Botão de DEBUG: mostra o que o backend RECEBE ---
+    if st.button("TEST debug-meta (backend received)"):
+        debug_url = os.getenv("ORCHESTRATOR_ENDPOINT", "").replace("/orchestrate", "/debug-meta")
+
+        headers = {"Content-Type": "application/json"}
+        if os.getenv("ORCHESTRATOR_API_KEY", ""):
+            headers["X-Orch-Secret"] = os.getenv("ORCHESTRATOR_API_KEY", "")
+
+        r = requests.post(debug_url, json={"meta": meta}, headers=headers, timeout=30)
+        st.write("Status:", r.status_code)
+        try:
+            st.json(r.json())
+        except Exception:
+            st.write(r.text)
+
+    # --- Agora roda a SIMULAÇÃO normal ---
     try:
-        st.caption(f"Running with meta = {meta}")
-
-if st.button("TEST debug-meta (backend received)"):
-    debug_url = os.getenv("ORCHESTRATOR_ENDPOINT", "").replace("/orchestrate", "/debug-meta")
-
-    headers = {"Content-Type": "application/json"}
-    if os.getenv("ORCHESTRATOR_API_KEY", ""):
-        headers["X-Orch-Secret"] = os.getenv("ORCHESTRATOR_API_KEY", "")
-
-    r = requests.post(debug_url, json={"meta": meta}, headers=headers, timeout=30)
-
-    st.write("Status:", r.status_code)
-    try:
-        st.json(r.json())
-    except Exception:
-        st.write(r.text)
-        
-    try:
-        st.json(r.json())
-    except Exception:
-        st.write(r.text)
         if mode == "Demo (offline)":
             result = demo_simulation(meta)
         else:
@@ -291,26 +289,22 @@ if st.button("TEST debug-meta (backend received)"):
             st.subheader("Decision Ledger (chain outputs)")
             agents = result.get("agents", [])
             df = pd.DataFrame([{
-            "Agent": a.get("name"),
-            "Goal": a.get("goal"),
-            "Decision": a.get("decision"),
-            "Autonomy": a.get("autonomy_level"),
-            "Tool access": a.get("tool_access"),
-            "Audit logging": a.get("audit_logging"),
-            "Accountability owner": a.get("accountability_owner"),
-            "Escalation rule": a.get("escalation_rule"),
-            "Open risks": "; ".join(a.get("open_risks", []))
-        } for a in agents])
-       
-
-        if not stage_mode:
-            st.subheader("Decision Ledger (chain outputs)")
+                "Agent": a.get("name"),
+                "Goal": a.get("goal"),
+                "Decision": a.get("decision"),
+                "Autonomy": a.get("autonomy_level"),
+                "Tool access": a.get("tool_access"),
+                "Audit logging": a.get("audit_logging"),
+                "Accountability owner": a.get("accountability_owner"),
+                "Escalation rule": a.get("escalation_rule"),
+                "Open risks": "; ".join(a.get("open_risks", []))
+            } for a in agents])
             st.dataframe(df, use_container_width=True, hide_index=True)
 
         st.divider()
 
         st.subheader("Alerts (what breaks and why)")
-        alerts = result.get("alerts", [])[:3]  # palco: só os 3 mais importantes
+        alerts = result.get("alerts", [])[:3]
         if not alerts:
             st.info("No alerts triggered.")
         else:
@@ -335,13 +329,14 @@ if st.button("TEST debug-meta (backend received)"):
             st.info("No Mermaid diagram provided.")
 
         if not stage_mode:
-          with st.expander("Raw JSON (for debugging / export)"):
-            st.json(result)
+            with st.expander("Raw JSON (for debugging / export)"):
+                st.json(result)
 
         st.info("Stage question: Who is the accountable human role here — and what exact decision do they own?")
 
     except Exception as e:
         st.error(f"Failed to run simulation: {e}")
         st.stop()
+
 else:
     st.info("Set inputs on the left and click **Run Round 1**, **Run Round 2**, or **Run Custom**.")
