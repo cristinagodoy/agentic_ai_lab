@@ -8,18 +8,30 @@ import streamlit.components.v1 as components
 # =========================
 # Mermaid renderer (Streamlit)
 # =========================
+import uuid
+import streamlit.components.v1 as components
+
 def render_mermaid(mermaid_code: str, height: int = 520):
-    """
-    Renders Mermaid diagrams in Streamlit using an HTML component.
-    """
+    diagram_id = f"mermaid-{uuid.uuid4().hex}"
+
+    # cuidado com crases/backticks dentro do código
+    safe_code = mermaid_code.replace("`", "\\`")
+
     html = f"""
-    <div class="mermaid">
-    {mermaid_code}
-    </div>
+    <div id="{diagram_id}"></div>
 
     <script type="module">
       import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-      mermaid.initialize({{ startOnLoad: true, theme: 'default' }});
+      mermaid.initialize({{ startOnLoad: false, theme: 'default' }});
+
+      const code = `{safe_code}`;
+      const el = document.getElementById("{diagram_id}");
+
+      mermaid.render("{diagram_id}-svg", code).then(({svg}}) => {{
+        el.innerHTML = svg;
+      }}).catch((err) => {{
+        el.innerHTML = "<pre style='color:red'>Mermaid render error: " + err + "</pre>";
+      }});
     </script>
     """
     components.html(html, height=height, scrolling=True)
