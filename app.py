@@ -247,14 +247,22 @@ elif round2:
 if round1 or round2 or run_custom:
     try:
         st.caption(f"Running with meta = {meta}")
-        if st.button("TEST debug-meta (backend received)"):
-            debug_url = os.getenv("ORCHESTRATOR_ENDPOINT", "").replace("/orchestrate", "/debug-meta")
+
+if st.button("TEST debug-meta (backend received)"):
+    debug_url = os.getenv("ORCHESTRATOR_ENDPOINT", "").replace("/orchestrate", "/debug-meta")
+
     headers = {"Content-Type": "application/json"}
     if os.getenv("ORCHESTRATOR_API_KEY", ""):
         headers["X-Orch-Secret"] = os.getenv("ORCHESTRATOR_API_KEY", "")
 
     r = requests.post(debug_url, json={"meta": meta}, headers=headers, timeout=30)
+
     st.write("Status:", r.status_code)
+    try:
+        st.json(r.json())
+    except Exception:
+        st.write(r.text)
+        
     try:
         st.json(r.json())
     except Exception:
