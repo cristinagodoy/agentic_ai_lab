@@ -248,7 +248,7 @@ if round1 or round2 or run_custom:
     try:
         st.caption(f"Running with meta = {meta}")
         if st.button("TEST debug-meta (backend received)"):
-    debug_url = os.getenv("ORCHESTRATOR_ENDPOINT", "").replace("/orchestrate", "/debug-meta")
+            debug_url = os.getenv("ORCHESTRATOR_ENDPOINT", "").replace("/orchestrate", "/debug-meta")
     headers = {"Content-Type": "application/json"}
     if os.getenv("ORCHESTRATOR_API_KEY", ""):
         headers["X-Orch-Secret"] = os.getenv("ORCHESTRATOR_API_KEY", "")
