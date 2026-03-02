@@ -11,10 +11,12 @@ import streamlit.components.v1 as components
 import uuid
 import streamlit.components.v1 as components
 
+import uuid
+import streamlit.components.v1 as components
+
 def render_mermaid(mermaid_code: str, height: int = 520):
     diagram_id = f"mermaid-{uuid.uuid4().hex}"
 
-    # cuidado com crases/backticks dentro do código
     safe_code = mermaid_code.replace("`", "\\`")
 
     html = f"""
@@ -27,13 +29,16 @@ def render_mermaid(mermaid_code: str, height: int = 520):
       const code = `{safe_code}`;
       const el = document.getElementById("{diagram_id}");
 
-      mermaid.render("{diagram_id}-svg", code).then(({svg}}) => {{
-        el.innerHTML = svg;
-      }}).catch((err) => {{
-        el.innerHTML = "<pre style='color:red'>Mermaid render error: " + err + "</pre>";
-      }});
+      mermaid.render("{diagram_id}-svg", code)
+        .then((result) => {{
+          el.innerHTML = result.svg;
+        }})
+        .catch((err) => {{
+          el.innerHTML = "<pre style='color:red'>Mermaid render error: " + err + "</pre>";
+        }});
     </script>
     """
+
     components.html(html, height=height, scrolling=True)
 
 # =========================
